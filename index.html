@@ -34,7 +34,7 @@ button,label.sec{font:600 14px/1.25 system-ui,-apple-system,Segoe UI,Roboto,sans
 <div class="row" style="flex-wrap:wrap;gap:6px;margin-bottom:8px"><input id="cfname" placeholder="Client name (files the assessment)" style="flex:2;min-width:180px" onchange="CUR.autoName=false;cfQueue()"><input id="cfphone" type="tel" placeholder="Phone" style="flex:1;min-width:120px" onchange="cfQueue()"><input id="cfemail" type="email" placeholder="Email" style="flex:1;min-width:140px" onchange="cfQueue()"></div>
 <div id="cfst" class="mut" style="margin:-2px 0 8px">Assessments are filed automatically under the client's name.</div>
 <textarea id="notes" placeholder="Example: John, 42, married, 2 kids ages 8 and 11, makes about 85k, smoker quit 3 years ago, has type 2 diabetes on metformin, mortgage 240k with 25 years left, wants to protect family and maybe build cash he can borrow from later, budget about 150 a month..."></textarea>
-<div class="row"><button class="rec" style="background:#b8452f" onclick="startCall()">📞 Call mode</button><button class="rec" style="background:#7a3fb8" onclick="startPC()">💻 Computer call</button><button id="mic" class="rec" onclick="toggleMic()">● Start dictation</button>
+<div class="row"><button class="rec" style="background:#b8452f" onclick="startCall()">📞 Call mode</button><button class="rec" style="background:#7a3fb8" onclick="$('pcbox').classList.remove('hide');pcMics()">💻 Computer call</button><button id="mic" class="rec" onclick="toggleMic()">● Start dictation</button>
 <label class="sec" style="background:#26313d;padding:9px 14px;border-radius:6px;cursor:pointer;font-weight:600">📷 Upload images<input id="img" type="file" accept="image/*" multiple class="hide" onchange="ocr(this.files)"></label>
 <button onclick="run()">Analyze & match</button><button class="sec" onclick="cfNew(false)">New client</button></div>
 <div id="callbox" class="hide" style="border:1px solid var(--bad);border-radius:8px;padding:10px;margin:10px 0">
@@ -43,13 +43,15 @@ button,label.sec{font:600 14px/1.25 system-ui,-apple-system,Segoe UI,Roboto,sans
 <label style="display:block;margin:8px 0;font-size:13px"><input type="checkbox" id="consent" style="width:auto" onchange="consentLog()"> Client agreed to have this call transcribed for notes <span id="consentts" class="mut"></span></label>
 <div id="interim" class="mut" style="min-height:20px;font-style:normal"></div>
 <div class="row" style="margin-top:6px"><button class="rec" onclick="endCall()">■ End call</button><button class="sec" onclick="copySummary()">Copy call summary</button></div>
-<p class="mut" style="margin:6px 0 0">Put the call on speaker. Tap "Me talking" when you speak and "Client talking" when they do. Both sides are used: your questions give meaning to the client's answers ("Are you a smoker?" → "No" means non-smoker). Options you list only count once the client picks or confirms one. Matches and follow-up questions update live.</p></div>
+<p class="mut" style="margin:6px 0 0"><b>Use a second device:</b> run Call mode on your iPad or computer, never on the phone you are calling from, because the phone may cut or reroute the call audio. Put the call on speaker. Tap "Me talking" when you speak and "Client talking" when they do. Both sides are used: your questions give meaning to the client's answers ("Are you a smoker?" → "No" means non-smoker). Options you list only count once the client picks or confirms one. Matches and follow-up questions update live.</p></div>
 <div id="pcbox" class="hide" style="border:1px solid #7a3fb8;border-radius:8px;padding:10px;margin:10px 0">
 <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px"><b style="color:#b98ae6">● Computer call <span id="pctimer">00:00</span></b><span id="pcq" class="mut"></span></div>
+<div class="row" style="margin-top:8px"><select id="pcmode" style="width:auto"><option value="protected">Protected mode: transcribe after the call (safest)</option><option value="live">Live mode: transcribe during the call</option></select>
+<select id="pcmic" style="width:auto"><option value="">Same mic as my phone system (default)</option><option value="none">Don't use my mic (client side only)</option></select></div>
 <label style="display:block;margin:8px 0;font-size:13px"><input type="checkbox" id="pcconsent" style="width:auto" onchange="pcConsent()"> Client agreed to have this call transcribed for notes <span id="pcconsentts" class="mut"></span></label>
 <div id="pcstat" class="mut" style="min-height:20px"></div>
-<div class="row" style="margin-top:6px"><button class="rec" onclick="endPC()">■ End call</button><button class="sec" onclick="copySummary()">Copy call summary</button></div>
-<p class="mut" style="margin:6px 0 0">For calls on a computer in Chrome or Edge. Take the call on the computer: a browser-tab phone (Google Voice, Quo), Phone Link on Windows, or iPhone calls on a Mac. Wear a headset. When asked what to share, pick the call's tab (turn on "Share tab audio") or your screen (turn on "Share system audio"). Your mic is labeled Me and the call audio is labeled Client automatically, so no tapping. The free speech model runs on this computer; the audio is never uploaded.</p></div>
+<div class="row" style="margin-top:6px"><button onclick="startPC()">● Start listening</button><button class="rec" onclick="endPC()">■ End call</button><button class="sec" onclick="pcPrep()">Download speech model</button><button class="sec" onclick="copySummary()">Copy call summary</button></div>
+<p class="mut" style="margin:6px 0 0">Chrome or Edge on a computer. Take the call on the computer (PolicyTek or another softphone, Phone Link on Windows, or iPhone calls on a Mac) and wear a headset. When asked what to share, pick your screen with "Share system audio" on. Your mic is labeled Me and the call audio is labeled Client automatically.<br><b>Call safety:</b> Assesser only listens. It never changes your mic volume, never turns on echo or noise processing, never plays sound, and never routes audio. Download the speech model once while you are NOT on a call. Protected mode does no transcribing until you end the call, so it adds no load during the call. Do a test call before using it on a paid lead.</p></div>
 <p class="mic mut" id="micst">Dictation works in Chrome and Edge. Keep talking; the text goes into the notes box as you speak.</p>
 <p id="ocrst" class="mut"></p><div id="thumbs"></div><details><summary class="mut" style="cursor:pointer">Show the text read from your photos</summary><pre id="ocrraw" style="white-space:pre-wrap;font-size:12px;background:#0c1116;padding:8px;border-radius:6px;max-height:220px;overflow:auto"></pre></details>
 <div id="interp"></div>
@@ -195,9 +197,12 @@ rec.onend=()=>{on=false;$('mic').textContent="● Start dictation";run()};rec.st
 
 
 
-/* ---- computer call mode: captures the call audio and your mic separately, transcribes locally with Whisper (free, no keys, audio never leaves the device) ---- */
-const PC={on:false,w:null,ready:false,loading:false,streams:[],ctx:null,t0:0,timer:null,q:0,done:0,consentAt:null,clientOn:false,last:0,dev:''};
-const PC_W=`import {pipeline} from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.2';
+/* ---- computer call mode: captures the call audio and your mic separately, transcribes locally with Whisper (free, no keys, audio never leaves the device).
+   Call-safety rules: never changes mic level or processing (no AGC/AEC/noise suppression), never opens a speaker/output device when the browser allows it,
+   never downloads the model during a call, and in Protected mode does no transcription until the call ends. ---- */
+const PC={on:false,w:null,ready:false,loading:false,streams:[],ctx:null,t0:0,timer:null,q:0,done:0,consentAt:null,clientOn:false,last:0,dev:'',hold:[],taps:[],out:[]};
+const PC_W=`import {pipeline,env} from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.2';
+try{env.backends.onnx.wasm.numThreads=1}catch(x){}
 let asr=null;const M='onnx-community/whisper-base.en';
 const prog=p=>{if(p.status==='progress')self.postMessage({type:'progress',file:p.file,pct:p.progress})};
 self.onmessage=async e=>{const m=e.data;
@@ -208,21 +213,26 @@ self.postMessage({type:'ready',dev})}
 if(m.type==='asr'){let text='';try{const r=await asr(m.audio);text=(r.text||'').trim()}catch(x){}self.postMessage({type:'text',spk:m.spk,t:m.t,text})}};`;
 const PC_JUNK=/^(\W*|you|thank you|thanks for watching|thank you for watching|bye|\[.*\]|\(.*\))\W*$/i;
 function pcStat(s){$('pcstat').textContent=s}
-function pcLoad(){if(PC.ready||PC.loading)return;PC.loading=true;pcStat('Loading the free speech model (first time downloads about 80 MB, then it is saved on this computer)…');
+function pcLive(){return $('pcmode')&&$('pcmode').value==='live'}
+function pcLoad(cb){if(PC.ready){cb&&cb();return}if(cb)PC.onready=cb;if(PC.loading)return;PC.loading=true;pcStat('Loading the free speech model (first time downloads about 80 MB, then it is saved on this computer)…');
 try{PC.w=new Worker(URL.createObjectURL(new Blob([PC_W],{type:'text/javascript'})),{type:'module'})}catch(e){PC.loading=false;pcStat('This browser cannot run the speech model. Use Chrome or Edge on a computer.');return}
 const pr={};PC.w.onmessage=e=>{const m=e.data;
 if(m.type==='progress'){pr[m.file]=m.pct||0;const v=Object.values(pr);pcStat('Downloading speech model… '+Math.round(v.reduce((a,b)=>a+b,0)/v.length)+'%')}
-if(m.type==='ready'){PC.ready=true;PC.loading=false;PC.dev=m.dev;pcStat(PC.on?'Listening. Speech model ready ('+(m.dev==='webgpu'?'fast GPU mode':'standard mode')+').':'Speech model ready.')}
+if(m.type==='ready'){PC.ready=true;PC.loading=false;PC.dev=m.dev;pcStat('Speech model ready on this computer ('+(m.dev==='webgpu'?'fast GPU mode':'standard mode')+').');const f=PC.onready;PC.onready=null;f&&f()}
 if(m.type==='error'){PC.loading=false;pcStat('Speech model failed to load: '+m.msg)}
-if(m.type==='text'){PC.done++;const t=(m.text||'').replace(/\s+/g,' ').trim();if(t&&!PC_JUNK.test(t)){$('notes').value+=`[${fmt(m.t)}] ${m.spk}: ${t}\n`;$('notes').scrollTop=1e9;if(Date.now()-PC.last>1500){PC.last=Date.now();run()}}
-$('pcq').textContent=PC.q>PC.done?`Transcribing ${PC.q-PC.done} clip(s)…`:''}};
+if(m.type==='text'){PC.done++;const t=(m.text||'').replace(/\s+/g,' ').trim();if(t&&!PC_JUNK.test(t)){$('notes').value+=`[${fmt(m.t)}] ${m.spk}: ${t}\n`;$('notes').scrollTop=1e9;if(PC.on&&Date.now()-PC.last>1500){PC.last=Date.now();run()}}
+$('pcq').textContent=PC.q>PC.done?`Transcribing ${PC.q-PC.done} clip(s)…`:'';if(PC.waitDone&&PC.done>=PC.q){const f=PC.waitDone;PC.waitDone=null;f()}}};
 PC.w.postMessage({type:'load'})}
+function pcPrep(){pcLoad(()=>pcStat('Speech model downloaded and saved on this computer. You are ready for calls.'))}
 function pcDown(x,sr){if(sr===16000)return x;const r=sr/16000,n=Math.floor(x.length/r),o=new Float32Array(n);for(let i=0;i<n;i++){const a=Math.floor(i*r),b=Math.min(x.length,Math.floor((i+1)*r));let s=0;for(let j=a;j<b;j++)s+=x[j];o[i]=s/Math.max(1,b-a)}return o}
+function pcI16(f){const o=new Int16Array(f.length);for(let i=0;i<f.length;i++)o[i]=Math.max(-1,Math.min(1,f[i]))*32767;return o}
+function pcF32(s){const o=new Float32Array(s.length);for(let i=0;i<s.length;i++)o[i]=s[i]/32767;return o}
+function pcPost(c){PC.q++;$('pcq').textContent=`Transcribing ${PC.q-PC.done} clip(s)…`;const a=pcF32(c.a);PC.w.postMessage({type:'asr',audio:a,spk:c.spk,t:c.t},[a.buffer])}
 function pcSend(st,spk){const sr=PC.ctx.sampleRate,len=st.len/sr;const buf=st.buf,ov=st.ov,act=st.act;st.buf=[];st.len=0;st.speaking=false;st.sil=0;st.ov=0;st.act=0;
 if(len<0.5)return;if(spk==='Me'&&act&&ov/act>0.6)return;/* mic only heard the client through speakers */
 let n=0;buf.forEach(b=>n+=b.length);const all=new Float32Array(n);let o=0;buf.forEach(b=>{all.set(b,o);o+=b.length});
-const a=pcDown(all,sr);if(!PC.ready){pcStat('Still loading the speech model; this clip will be transcribed when it is ready.')}
-PC.q++;$('pcq').textContent=`Transcribing ${PC.q-PC.done} clip(s)…`;PC.w&&PC.w.postMessage({type:'asr',audio:a,spk,t:st.start-PC.t0},[a.buffer])}
+const c={a:pcI16(pcDown(all,sr)),spk,t:st.start-PC.t0};
+if(pcLive()&&PC.ready&&PC.on)pcPost(c);else{PC.hold.push(c);$('pcq').textContent=`${PC.hold.length} clip(s) saved for after the call`}}
 function pcTap(stream,spk){const src=PC.ctx.createMediaStreamSource(stream),p=PC.ctx.createScriptProcessor(4096,1,1);
 const st={buf:[],len:0,speaking:false,sil:0,nf:0.003,pre:null,start:0,ov:0,act:0};
 p.onaudioprocess=e=>{if(!PC.on)return;const x=e.inputBuffer.getChannelData(0),d=x.length/PC.ctx.sampleRate;let s=0;for(let i=0;i<x.length;i++)s+=x[i]*x[i];const rms=Math.sqrt(s/x.length);
@@ -231,26 +241,35 @@ if(spk==='Client')PC.clientOn=loud||(st.speaking&&st.sil<0.4);
 if(loud){if(!st.speaking){st.speaking=true;st.start=Date.now();if(st.pre){st.buf.push(st.pre);st.len+=st.pre.length}}st.sil=0}else if(st.speaking)st.sil+=d;
 if(st.speaking){st.buf.push(new Float32Array(x));st.len+=x.length;if(spk==='Me'&&loud){st.act++;if(PC.clientOn)st.ov++}
 if(st.sil>0.9||st.len/PC.ctx.sampleRate>20)pcSend(st,spk)}else st.pre=new Float32Array(x)};
-const g=PC.ctx.createGain();g.gain.value=0;src.connect(p);p.connect(g);g.connect(PC.ctx.destination);PC.taps.push({st,spk})}
+src.connect(p);if(PC.silentSink){p.connect(PC.ctx.destination)}else{const g=PC.ctx.createGain();g.gain.value=0;p.connect(g);g.connect(PC.ctx.destination)}
+PC.taps.push({st,spk,src,p})}
+async function pcMics(){const s=$('pcmic');if(!s||!navigator.mediaDevices?.enumerateDevices)return;try{const d=(await navigator.mediaDevices.enumerateDevices()).filter(x=>x.kind==='audioinput');const cur=s.value;
+s.innerHTML='<option value="">Same mic as my phone system (default)</option><option value="none">Don\'t use my mic (client side only)</option>'+d.filter(x=>x.deviceId&&x.deviceId!=='default'&&x.deviceId!=='communications').map(x=>`<option value="${x.deviceId}">${esc(x.label||'Microphone')}</option>`).join('');if(cur)s.value=cur}catch(e){}}
 async function startPC(){if(PC.on)return;if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia){alert('Computer call mode needs Chrome or Edge on a Windows or Mac computer.');return}
 CUR.source='call';if(typeof on!=='undefined'&&on&&rec)rec.stop();if(call.on)endCall();
-$('pcbox').classList.remove('hide');pcLoad();let mic,disp;
-try{mic=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}})}catch(e){alert('Microphone access was blocked. Allow the microphone for this site, then try again.');$('pcbox').classList.add('hide');return}
-try{disp=await navigator.mediaDevices.getDisplayMedia({video:true,audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false},systemAudio:'include',selfBrowserSurface:'exclude'})}catch(e){mic.getTracks().forEach(t=>t.stop());
-alert(e&&e.name==='NotAllowedError'&&!/user|denied by user/i.test(e.message||'')?'This page is not allowed to capture call audio here. Open Assesser at silver-stamp.github.io/assesser in Chrome or Edge on your computer.':'Call audio was not shared. Tap Computer call again and pick the tab or screen with your call, with "Share audio" turned on.');$('pcbox').classList.add('hide');return}
-if(!disp.getAudioTracks().length){disp.getTracks().forEach(t=>t.stop());mic.getTracks().forEach(t=>t.stop());alert('No call audio came through. Start again and turn on "Share tab audio" (for a browser-tab call) or "Share system audio" (for Phone Link or the Mac phone app).');$('pcbox').classList.add('hide');return}
-disp.getVideoTracks().forEach(t=>t.stop());PC.streams=[mic,disp];PC.taps=[];
-PC.ctx=new (window.AudioContext||window.webkitAudioContext)();PC.on=true;PC.t0=Date.now();PC.q=0;PC.done=0;
-pcTap(new MediaStream(disp.getAudioTracks()),'Client');pcTap(mic,'Me');
+$('pcbox').classList.remove('hide');pcMics();
+if(pcLive()&&!PC.ready){pcStat('Live mode needs the speech model downloaded first. Tap "Download speech model" when you are NOT on a call, or switch to Protected mode.');return}
+let mic=null,disp;const mv=$('pcmic')?$('pcmic').value:'';
+/* raw mic: no echo cancellation, noise suppression or auto gain, so the browser never touches the system mic level or ducks other audio */
+if(mv!=='none'){try{mic=await navigator.mediaDevices.getUserMedia({audio:{deviceId:mv?{exact:mv}:undefined,echoCancellation:false,noiseSuppression:false,autoGainControl:false}})}catch(e){alert('Microphone access was blocked or that mic is unavailable. Allow the microphone for this site, pick a mic, or choose "Don\'t use my mic".');return}}
+try{disp=await navigator.mediaDevices.getDisplayMedia({video:true,audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false,suppressLocalAudioPlayback:false},systemAudio:'include',selfBrowserSurface:'exclude',surfaceSwitching:'exclude'})}catch(e){mic&&mic.getTracks().forEach(t=>t.stop());
+alert(e&&e.name==='NotAllowedError'&&!/user|denied by user/i.test(e.message||'')?'This page is not allowed to capture call audio here. Open Assesser at silver-stamp.github.io/assesser in Chrome or Edge on your computer.':'Call audio was not shared. Tap Computer call again and pick your screen with "Share system audio" on (or the call\'s tab with "Share tab audio" on).');return}
+if(!disp.getAudioTracks().length){disp.getTracks().forEach(t=>t.stop());mic&&mic.getTracks().forEach(t=>t.stop());alert('No call audio came through. Start again and turn on "Share system audio" (or "Share tab audio" for a browser-tab call).');return}
+disp.getVideoTracks().forEach(t=>t.stop());PC.streams=[disp].concat(mic?[mic]:[]);PC.taps=[];PC.hold=[];PC.q=0;PC.done=0;
+/* sinkId 'none' = process audio without opening any speaker/output device (Chrome/Edge 110+) */
+try{PC.ctx=new AudioContext({sinkId:{type:'none'}});PC.silentSink=true}catch(e){PC.ctx=new (window.AudioContext||window.webkitAudioContext)();PC.silentSink=false}
+PC.on=true;PC.t0=Date.now();pcTap(new MediaStream(disp.getAudioTracks()),'Client');if(mic)pcTap(mic,'Me');
 disp.getAudioTracks()[0].onended=()=>{if(PC.on)endPC()};
 PC.timer=setInterval(()=>$('pctimer').textContent=fmt(Date.now()-PC.t0),1000);try{PC.lock=await navigator.wakeLock?.request('screen')}catch(e){}
-$('notes').value+=($('notes').value?"\n":"")+`[Computer call started ${new Date().toLocaleString()}; speakers labeled automatically]\n`;
-pcStat(PC.ready?'Listening. Your mic is labeled "Me", the call audio is labeled "Client".':'Listening. Speech model is still loading; clips are queued.')}
+$('notes').value+=($('notes').value?"\n":"")+`[Computer call started ${new Date().toLocaleString()}; ${pcLive()?'live':'protected'} mode; speakers labeled automatically]\n`;
+pcStat(pcLive()?'Listening and transcribing live. Mic = "Me", call audio = "Client".':'Protected mode: recording only. Nothing is transcribed or downloaded until you end the call.')}
 function pcConsent(){PC.consentAt=$('pcconsent').checked?new Date():null;$('pcconsentts').textContent=PC.consentAt?'· logged '+PC.consentAt.toLocaleString():''}
-function endPC(){if(!PC.on)return;(PC.taps||[]).forEach(t=>{if(t.st.speaking)pcSend(t.st,t.spk)});PC.on=false;clearInterval(PC.timer);
-PC.streams.forEach(s=>s.getTracks().forEach(t=>t.stop()));try{PC.ctx.close()}catch(e){}try{PC.lock&&PC.lock.release()}catch(e){}
-const fin=()=>{$('notes').value+=`[Computer call ended, length ${fmt(Date.now()-PC.t0)}${PC.consentAt?', consent to transcribe logged '+PC.consentAt.toLocaleString():', consent checkbox NOT checked'}]\n`;run();lastSummary=buildSummary();$('pcbox').classList.add('hide');$('micst').textContent='Computer call ended. Review the profile and follow-up questions below.'};
-const wait=Date.now();(function chk(){if(PC.done>=PC.q||Date.now()-wait>60000)fin();else{pcStat('Finishing the last clips…');setTimeout(chk,500)}})()}
+function endPC(){if(!PC.on)return;PC.taps.forEach(t=>{if(t.st.speaking)pcSend(t.st,t.spk)});PC.on=false;clearInterval(PC.timer);
+PC.taps.forEach(t=>{try{t.src.disconnect();t.p.disconnect()}catch(e){}});PC.streams.forEach(s=>s.getTracks().forEach(t=>t.stop()));try{PC.ctx.close()}catch(e){}try{PC.lock&&PC.lock.release()}catch(e){}
+const len=fmt(Date.now()-PC.t0);
+const fin=()=>{$('notes').value+=`[Computer call ended, length ${len}${PC.consentAt?', consent to transcribe logged '+PC.consentAt.toLocaleString():', consent checkbox NOT checked'}]\n`;run();lastSummary=buildSummary();$('pcbox').classList.add('hide');$('micst').textContent='Computer call ended. Review the profile and follow-up questions below.'};
+const drain=()=>{const h=PC.hold.sort((a,b)=>a.t-b.t);PC.hold=[];if(!h.length&&PC.done>=PC.q){fin();return}PC.waitDone=fin;h.forEach(pcPost);pcStat('Call ended. Transcribing the call on this computer…');if(PC.done>=PC.q){PC.waitDone=null;fin()}};
+if(PC.hold.length&&!PC.ready){pcStat('Call ended. Loading the speech model…');pcLoad(drain)}else drain()}
 
 /* ---- call mode ---- */
 let call={on:false,rec:null,spk:'Client',t0:0,timer:null,lines:[],consentAt:null,lock:null,last:0};
@@ -452,7 +471,10 @@ function cfQueue(){const t=$('notes').value.trim();if(!t)return;if(!$('cfname').
  if(!CF_PASS){CF_PENDING=true;cfState('Not filed yet. <a href="#" onclick="show(\'cf\');return false" style="color:var(--acc)">Unlock Client Files</a> to save this assessment.','warn');return}
  clearTimeout(CF_T);cfState('Saving to client file…');CF_T=setTimeout(cfSave,1200)}
 async function cfSave(){if(!CF_PASS){CF_PENDING=true;return}if(!$('notes').value.trim())return;try{const j=await cfRpc('assesser_save',{pass:CF_PASS,payload:cfPayload()});CUR.cid=j.client_id;CF_PENDING=false;cfState(`✓ Filed in ${esc($('cfname').value.trim()||'Unnamed client')}'s file · ${new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}`,'')}catch(e){CF_PENDING=true;cfState('Not saved: '+esc(e.message)+' <a href="#" onclick="cfSave();return false" style="color:var(--acc)">Retry</a>','warn');if(/passcode/i.test(e.message))CF_PASS=null}}
-function cfNew(keepClient){$('notes').value='';OV={};$('thumbs').innerHTML='';$('ocrraw').textContent='';if(!keepClient){$('cfname').value='';$('cfphone').value='';$('cfemail').value='';CUR.cid=null}CUR.aid=uid();CUR.source='interview';CUR.autoName=false;cfState(keepClient?'New assessment started for this client.':'New client. Assessments file automatically once you analyze.');run()}
+async function cfNew(keepClient){if(PC.on||call.on){alert('A call is still being captured. Tap End call first, then start a new client.');return}
+const has=$('notes').value.trim();if(has&&CF_PASS){clearTimeout(CF_T);await cfSave()}
+if(has&&(!CF_PASS||CF_PENDING)&&!confirm('This assessment is not saved to Client Files yet (Client Files is locked or the save failed). Clear it anyway?'))return;cfNew0(keepClient)}
+function cfNew0(keepClient){$('notes').value='';OV={};$('thumbs').innerHTML='';$('ocrraw').textContent='';if(!keepClient){$('cfname').value='';$('cfphone').value='';$('cfemail').value='';CUR.cid=null}CUR.aid=uid();CUR.source='interview';CUR.autoName=false;cfState(keepClient?'New assessment started for this client.':'New client. Assessments file automatically once you analyze.');run()}
 async function cfLock(){const el=$('cflock');el.innerHTML='<p class="mut">Checking…</p>';try{const s=await cfRpc('assesser_status');
  el.innerHTML=s.has_passcode?`<p>Enter your Client Files passcode. It stays unlocked until you close or reload Assesser.</p><div class="row"><input id="cfpw" type="password" autocomplete="current-password" placeholder="Passcode" style="max-width:240px" onkeydown="if(event.key==='Enter')cfUnlock()"><button onclick="cfUnlock()">Unlock</button></div><p id="cferr" class="warn"></p>`
  :`<p><b>First-time setup:</b> create a passcode (6+ characters) that protects every client file. Only you should know it. It can't be recovered here, so save it in your phone's password manager.</p><div class="row"><input id="cfpw" type="password" autocomplete="new-password" placeholder="New passcode" style="max-width:200px"><input id="cfpw2" type="password" autocomplete="new-password" placeholder="Repeat" style="max-width:200px"><button onclick="cfSetPass()">Create passcode</button></div><p id="cferr" class="warn"></p>`}catch(e){el.innerHTML='<p class="warn">Can\'t reach the client file server: '+esc(e.message)+'</p>'}}
