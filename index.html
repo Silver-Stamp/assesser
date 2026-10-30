@@ -79,11 +79,11 @@ button,label.sec{font:600 14px/1.25 system-ui,-apple-system,Segoe UI,Roboto,sans
 
 <main id="uw" class="hide"><section class="card full"><h2>Underwriting guides and key rules, by carrier</h2><p class="mut">Links go to the most recent public or agent-distributed guides found as of October 2026. Some carriers keep their newest version behind the agent portal, so always confirm there before submitting.</p><div class="row" style="margin-bottom:12px"><input id="ask" placeholder="Ask the guides, e.g. &quot;COPD with oxygen&quot;, &quot;vape non-tobacco rates&quot;, &quot;stent 2 years ago&quot;, &quot;max face age 78&quot;" onkeydown="if(event.key==='Enter')askGuides()" style="flex:1"><button onclick="askGuides()">Ask</button></div><div id="askres"></div><div id="guides"></div></section></main>
 <script>
-const AGENT=(()=>{try{return JSON.parse(localStorage.getItem('assesser_agent'))||{}}catch(e){return{}}})();
-function agentSig(){return [AGENT.name,AGENT.npn&&('Licensed insurance professional, NPN '+AGENT.npn),AGENT.phone].filter(Boolean).join('\n')}
+/*AGENT_START*/const AGENT=(()=>{try{return JSON.parse(localStorage.getItem('assesser_agent'))||{}}catch(e){return{}}})();
 function agentSetup(){const f=[['name','Your name (shown on client files and emails)'],['npn','Your NPN'],['phone','Your phone'],['email','Email to send client files to']];
 for(const [k,q] of f){const v=prompt(q,AGENT[k]||'');if(v===null)return;AGENT[k]=v.trim()}
-try{localStorage.setItem('assesser_agent',JSON.stringify(AGENT));alert('Saved on this device.')}catch(e){alert('Could not save on this device.')}}
+try{localStorage.setItem('assesser_agent',JSON.stringify(AGENT));alert('Saved on this device.')}catch(e){alert('Could not save on this device.')}}/*AGENT_END*/
+function agentSig(){return [AGENT.name,AGENT.npn&&('Licensed insurance professional, NPN '+AGENT.npn),AGENT.phone].filter(Boolean).join('\n')}
 
 const GUIDES={
 "Americo":{links:[["Final Expense Products at a Glance","https://www.americo.com/Content/FEAtAGlance.pdf"],["Eagle Select Agent Guide","https://summersagency.com/wp-content/uploads/2024/11/Americo-Select-2024.pdf"],["Eagle Select UW / knockouts summary","https://legacyagent.com/index.php/ar/component/content/category/americo?Itemid="]],phone:"Agent Services 800-231-0801",rules:["Instant-decision e-app uses MIB, Rx and the application answers to place clients in Eagle Select 1, 2 or 3.","Declined: organ transplant, MS, ALS, lupus, Alzheimer's/dementia, wheelchair due to disease, hospice, oxygen, or awaiting tests or surgery.","Eagle Select 1 is not available for respiratory disease, stroke/TIA or heart disease combined with nicotine use.","2 of diabetes, heart disease and stroke/TIA (even non-smokers) goes to Eagle Select 2.","Quit Smoking Advantage: smokers get non-nicotine rates for 3 years."],ko:["organ transplant","als","multiple sclerosis","lupus","dementia","alzheimer","hospice","oxygen","wheelchair"]},
