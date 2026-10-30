@@ -24,17 +24,30 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{border-bottom:1px
 label.sec{display:inline-block;font:600 15px/1.5 system-ui,Segoe UI,Roboto,sans-serif;color:var(--tx)}
 button,label.sec{font:600 14px/1.25 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;vertical-align:middle}
 #qs{padding-left:22px}#qs li[data-ph]{margin-left:-22px}
+#cv{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column}#cv.hide{display:none}
+#cvbar{display:flex;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.cvnext{font-size:15px;color:var(--warn);flex:1;min-width:200px}.cvnext b{color:var(--tx)}
+#cvgrid{flex:1;display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:10px;padding:10px;min-height:0;zoom:var(--cvz,1)}
+.cvp{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;min-height:0;display:flex;flex-direction:column}
+.cvp>h2{position:sticky;top:-12px;background:var(--panel);margin:-12px -12px 8px;padding:10px 12px 6px;z-index:2;border-bottom:1px solid var(--line)}
+#cv #notes{flex:1 0 220px;min-height:220px;font-size:15px}
+#cv #qs{font-size:16.5px;line-height:1.45}#cv #qs li{margin-bottom:10px}#cv #qs li:first-child:not([data-ph]){color:var(--warn);font-weight:600}
+#cvtabs{display:none;gap:6px;padding:8px 10px 0}#cvtabs button{flex:1;background:#26313d;color:var(--tx)}#cvtabs button.on{background:var(--acc);color:#04201c}
+@media(max-width:900px){#cvgrid{grid-template-columns:1fr}.cvp{display:none}.cvp.on{display:flex}#cvtabs{display:flex}}
+body.cvon{overflow:hidden}
+#cv #cvbtns>button:first-child{display:none}
+@media(max-width:900px){#cvbar{padding:6px 8px;gap:6px}#cvbar>b{display:none}.cvnext{font-size:14px;min-width:0;order:2;flex-basis:100%}#cvbar>span:last-child{margin-left:0!important;order:1;width:100%;justify-content:flex-end}#cvbar button{padding:6px 10px}}
 </style></head><body>
 <header><h1><span>Assesser</span> · Client-to-product matching agent</h1>
-<nav><button class="sec" onclick="show('match')">Interview & Match</button><button class="sec" onclick="show('lib')">My Carriers & Products</button><button class="sec" onclick="show('uw')">Underwriting Guides</button><button class="sec" onclick="show('pf')">Pathfinder Leads</button><button class="sec" onclick="show('cf')">Client Files</button><button class="sec" onclick="agentSetup()">My info</button></nav></header>
+<nav><button class="sec" onclick="show('match')">Interview & Match</button><button class="sec" onclick="show('lib')">My Carriers & Products</button><button class="sec" onclick="show('uw')">Underwriting Guides</button><button class="sec" onclick="show('pf')">Pathfinder Leads</button><button class="sec" onclick="show('cf')">Client Files</button><button class="sec" onclick="agentSetup()">My info</button><button class="sec" style="background:#2c5d8a;color:#fff" onclick="callView(true)">📺 Call view</button></nav></header>
 
 <main id="match">
 <section class="card">
 <h2>1. Interview notes (speak or type)</h2>
-<div class="row" style="flex-wrap:wrap;gap:6px;margin-bottom:8px"><input id="cfname" placeholder="Client name (files the assessment)" style="flex:2;min-width:180px" onchange="CUR.autoName=false;cfQueue()"><input id="cfphone" type="tel" placeholder="Phone" style="flex:1;min-width:120px" onchange="cfQueue()"><input id="cfemail" type="email" placeholder="Email" style="flex:1;min-width:140px" onchange="cfQueue()"></div>
+<div id="cfrow" class="row" style="flex-wrap:wrap;gap:6px;margin-bottom:8px"><input id="cfname" placeholder="Client name (files the assessment)" style="flex:2;min-width:180px" onchange="CUR.autoName=false;cfQueue()"><input id="cfphone" type="tel" placeholder="Phone" style="flex:1;min-width:120px" onchange="cfQueue()"><input id="cfemail" type="email" placeholder="Email" style="flex:1;min-width:140px" onchange="cfQueue()"></div>
 <div id="cfst" class="mut" style="margin:-2px 0 8px">Assessments are filed automatically under the client's name.</div>
 <textarea id="notes" placeholder="Example: John, 42, married, 2 kids ages 8 and 11, makes about 85k, smoker quit 3 years ago, has type 2 diabetes on metformin, mortgage 240k with 25 years left, wants to protect family and maybe build cash he can borrow from later, budget about 150 a month..."></textarea>
-<div class="row"><button class="rec" style="background:#b8452f" onclick="startCall()">📞 Call mode</button><button class="rec" style="background:#7a3fb8" onclick="$('pcbox').classList.remove('hide');pcMics()">💻 Computer call</button><button id="mic" class="rec" onclick="toggleMic()">● Start dictation</button>
+<div id="cvbtns" class="row"><button class="sec" style="background:#2c5d8a;color:#fff" onclick="callView()">📺 Call view</button><button class="rec" style="background:#b8452f" onclick="startCall()">📞 Call mode</button><button class="rec" style="background:#7a3fb8" onclick="$('pcbox').classList.remove('hide');pcMics()">💻 Computer call</button><button id="mic" class="rec" onclick="toggleMic()">● Start dictation</button>
 <label class="sec" style="background:#26313d;padding:9px 14px;border-radius:6px;cursor:pointer;font-weight:600">📷 Upload images<input id="img" type="file" accept="image/*" multiple class="hide" onchange="ocr(this.files)"></label>
 <button onclick="run()">Analyze & match</button><button class="sec" onclick="cfNew(false)">New client</button></div>
 <div id="callbox" class="hide" style="border:1px solid var(--bad);border-radius:8px;padding:10px;margin:10px 0">
@@ -86,6 +99,9 @@ button,label.sec{font:600 14px/1.25 system-ui,-apple-system,Segoe UI,Roboto,sans
 </section></main>
 
 <main id="uw" class="hide"><section class="card full"><h2>Underwriting guides and key rules, by carrier</h2><p class="mut">Links go to the most recent public or agent-distributed guides found as of October 2026. Some carriers keep their newest version behind the agent portal, so always confirm there before submitting.</p><div class="row" style="margin-bottom:12px"><input id="ask" placeholder="Ask the guides, e.g. &quot;COPD with oxygen&quot;, &quot;vape non-tobacco rates&quot;, &quot;stent 2 years ago&quot;, &quot;max face age 78&quot;" onkeydown="if(event.key==='Enter')askGuides()" style="flex:1"><button onclick="askGuides()">Ask</button></div><div id="askres"></div><div id="guides"></div></section></main>
+<div id="cv" class="hide"><div id="cvbar"><b style="color:var(--acc)">📺 Call view</b><span id="cvnext" class="cvnext"></span><span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap"><button class="sec" onclick="cvZoom(-1)" title="Smaller text">A−</button><button class="sec" onclick="cvZoom(1)" title="Bigger text">A+</button><button class="sec" onclick="callView(false)">✕ Exit call view</button></span></div>
+<div id="cvtabs"><button data-p="L" onclick="cvTab('L')">Notes</button><button data-p="M" onclick="cvTab('M')">Ask next <span id="cvqn"></span></button><button data-p="R" onclick="cvTab('R')">Matches</button></div>
+<div id="cvgrid"><section class="cvp" id="cvL"><h2>Notes</h2></section><section class="cvp" id="cvM"><h2>Ask next</h2></section><section class="cvp" id="cvR"><h2>Best matches and quotes</h2></section></div></div>
 <script>
 /*AGENT_START*/const AGENT=(()=>{try{return JSON.parse(localStorage.getItem('assesser_agent'))||{}}catch(e){return{}}})();
 function agentSetup(){const f=[['name','Your name (shown on client files and emails)'],['npn','Your NPN'],['phone','Your phone'],['email','Email to send client files to']];
@@ -505,6 +521,19 @@ function cfText(c){const L=[`CLIENT FILE: ${c.name}`,[c.age&&('Age '+c.age),c.se
  if((a.followups||[]).length){L.push('Follow-up questions:');a.followups.forEach(q=>L.push(' - '+q))}if(a.quotes)L.push('Quotes:\n'+a.quotes);L.push('Notes entered:\n'+(a.input_text||''),'')});return L.join('\n')}
 function cfDownload(){const c=CF_OPEN;const html=`<!do'+'ctype html><meta charset="utf-8"><title>${esc(c.name)} client file<\/title><bo'+'dy style="font:14px/1.5 system-ui;max-width:800px;margin:24px auto;padding:0 16px"><pre style="white-space:pre-wrap;font:inherit">${esc(cfText(c))}<\/pre><\/body>`;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));a.download=c.name.replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'_')+'_client_file.html';document.body.appendChild(a);a.click();a.remove()}
 function cfEmail(){const c=CF_OPEN;let b=cfText(c);if(b.length>1800)b=b.slice(0,1800)+'\n…(trimmed; open Client Files in Assesser for the full file)';location.href=`mailto:${AGENT.email||''}?subject=${encodeURIComponent('Client file: '+c.name)}&body=${encodeURIComponent(b)}`}
+
+/* ---- call view ---- */
+const CV={on:false,ph:[],z:1};
+function cvMove(id,dest){const el=$(id);if(!el)return;const ph=document.createComment('cv');el.parentNode.insertBefore(ph,el);CV.ph.push([ph,el]);dest.appendChild(el)}
+function callView(on){if(on===undefined)on=!CV.on;if(on===CV.on)return;CV.on=on;document.body.classList.toggle('cvon',on);
+ if(on){show('match');CV.ph=[];['cfrow','cfst','notes','cvbtns','callbox','pcbox','micst'].forEach(i=>cvMove(i,$('cvL')));['qs','interp'].forEach(i=>cvMove(i,$('cvM')));['results','quotes','profile'].forEach(i=>cvMove(i,$('cvR')));$('cv').classList.remove('hide');cvTab(CV.tab||'L');cvNext()}
+ else{CV.ph.slice().reverse().forEach(([ph,el])=>{ph.parentNode.insertBefore(el,ph);ph.remove()});CV.ph=[];$('cv').classList.add('hide')}}
+function cvTab(p){CV.tab=p;['L','M','R'].forEach(k=>$('cv'+k).classList.toggle('on',k===p));document.querySelectorAll('#cvtabs button').forEach(b=>b.classList.toggle('on',b.dataset.p===p))}
+function cvZoom(d){CV.z=Math.min(1.6,Math.max(0.8,Math.round((CV.z+d*0.1)*10)/10));$('cvgrid').style.setProperty('--cvz',CV.z)}
+function cvNext(){const q=[...document.querySelectorAll('#qs li:not([data-ph])')];const n=$('cvnext');if(n)n.innerHTML=q.length?'<b>Ask next:</b> '+esc(q[0].textContent.trim()):'';const c=$('cvqn');if(c)c.textContent=q.length?'('+q.length+')':''}
+{const _r=run;run=function(){const v=_r.apply(this,arguments);try{cvNext()}catch(e){}return v}}
+{const _s=startCall;startCall=function(){callView(true);return _s.apply(this,arguments)};const _p=startPC;startPC=function(){callView(true);return _p.apply(this,arguments)}}
+{const n=$('notes');if(n&&n.addEventListener)n.addEventListener('input',()=>{clearTimeout(CV.t);CV.t=setTimeout(run,900)})}
 
 if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script></body></html>
