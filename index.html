@@ -24,6 +24,9 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{border-bottom:1px
 label.sec{display:inline-block;font:600 15px/1.5 system-ui,Segoe UI,Roboto,sans-serif;color:var(--tx)}
 button,label.sec{font:600 14px/1.25 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;vertical-align:middle}
 #qs{padding-left:22px}#qs li[data-ph]{margin-left:-22px}
+.appf{border:1px solid var(--line);border-radius:10px;padding:10px;margin:10px 0;background:#0c1116}.appfh{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.appfg{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px}.af{text-align:left;border-radius:8px;padding:5px 8px;font-size:13.5px;border:1px solid var(--line);background:#141b23;color:var(--tx);line-height:1.25;word-break:break-word}.af span{display:block;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.03em}.af.ok{border-color:#2f6f5f;cursor:pointer;font-weight:600}.af.no{border-color:#7a3b2e;color:#f0a58f}.af.opt{opacity:.55}
+.pbtn{display:inline-block;margin:3px 4px 3px 0;padding:6px 11px;border-radius:8px;background:#26313d;color:var(--tx);text-decoration:none;font-size:13.5px;font-weight:600;border:1px solid var(--line)}.pbtn.hot{background:var(--acc);color:#04201c;border-color:var(--acc)}
 #cv{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column}#cv.hide{display:none}
 #cvbar{display:flex;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .cvnext{font-size:15px;color:var(--warn);flex:1;min-width:200px}.cvnext b{color:var(--tx)}
@@ -68,10 +71,10 @@ body.cvon{overflow:hidden}
 <p class="mic mut" id="micst">Dictation works in Chrome and Edge. Keep talking; the text goes into the notes box as you speak.</p>
 <p id="ocrst" class="mut"></p><div id="thumbs"></div><details><summary class="mut" style="cursor:pointer">Show the text read from your photos</summary><pre id="ocrraw" style="white-space:pre-wrap;font-size:12px;background:#0c1116;padding:8px;border-radius:6px;max-height:220px;overflow:auto"></pre></details>
 <div id="interp"></div>
-<h2 style="margin-top:16px">2. Client profile the agent pulled from your notes</h2><div id="profile" class="mut">Nothing yet.</div>
+<div id="appf"></div><h2 style="margin-top:16px">2. Client profile the agent pulled from your notes</h2><div id="profile" class="mut">Nothing yet.</div>
 </section>
 <section class="card">
-<h2>3. Best product matches</h2><div id="results" class="mut">Speak, type, or upload photos of an intake form, ID, med list, or notes. Then run the analysis.</div>
+<h2>3. Best product matches</h2><div id="portals" style="margin-bottom:8px"></div><div id="results" class="mut">Speak, type, or upload photos of an intake form, ID, med list, or notes. Then run the analysis.</div>
 <h2 style="margin-top:16px">Quote builder (estimates)</h2><div id="quotes" class="mut">Quotes appear here once age is known.</div>
 <h2 style="margin-top:16px">4. Follow-up questions to ask</h2><ol id="qs" class="q mut"><li data-ph style="list-style:none">Questions to ask appear here after you analyze a client.</li></ol>
 </section>
@@ -101,7 +104,7 @@ body.cvon{overflow:hidden}
 <main id="uw" class="hide"><section class="card full"><h2>Underwriting guides and key rules, by carrier</h2><p class="mut">Links go to the most recent public or agent-distributed guides found as of October 2026. Some carriers keep their newest version behind the agent portal, so always confirm there before submitting.</p><div class="row" style="margin-bottom:12px"><input id="ask" placeholder="Ask the guides, e.g. &quot;COPD with oxygen&quot;, &quot;vape non-tobacco rates&quot;, &quot;stent 2 years ago&quot;, &quot;max face age 78&quot;" onkeydown="if(event.key==='Enter')askGuides()" style="flex:1"><button onclick="askGuides()">Ask</button></div><div id="askres"></div><div id="guides"></div></section></main>
 <div id="cv" class="hide"><div id="cvbar"><b style="color:var(--acc)">📺 Call view</b><span id="cvnext" class="cvnext"></span><span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap"><button class="sec" onclick="cvZoom(-1)" title="Smaller text">A−</button><button class="sec" onclick="cvZoom(1)" title="Bigger text">A+</button><button class="sec" onclick="callView(false)">✕ Exit call view</button></span></div>
 <div id="cvtabs"><button data-p="L" onclick="cvTab('L')">Notes</button><button data-p="M" onclick="cvTab('M')">Ask next <span id="cvqn"></span></button><button data-p="R" onclick="cvTab('R')">Matches</button></div>
-<div id="cvgrid"><section class="cvp" id="cvL"><h2>Notes</h2></section><section class="cvp" id="cvM"><h2>Ask next</h2></section><section class="cvp" id="cvR"><h2>Best matches and quotes</h2></section></div></div>
+<div id="cvgrid"><section class="cvp" id="cvL"><h2>Notes</h2></section><section class="cvp" id="cvM"><h2>Application info and ask next</h2></section><section class="cvp" id="cvR"><h2>Best matches and quotes</h2></section></div></div>
 <script>
 /*AGENT_START*/const AGENT=(()=>{try{return JSON.parse(localStorage.getItem('assesser_agent'))||{}}catch(e){return{}}})();
 function agentSetup(){const f=[['name','Your name (shown on client files and emails)'],['npn','Your NPN'],['phone','Your phone'],['email','Email to send client files to']];
@@ -236,7 +239,7 @@ const pr={};PC.w.onmessage=e=>{const m=e.data;
 if(m.type==='progress'){pr[m.file]=m.pct||0;const v=Object.values(pr);pcStat('Downloading speech model… '+Math.round(v.reduce((a,b)=>a+b,0)/v.length)+'%')}
 if(m.type==='ready'){PC.ready=true;PC.loading=false;PC.dev=m.dev;pcStat('Speech model ready on this computer ('+(m.dev==='webgpu'?'fast GPU mode':'standard mode')+').');const f=PC.onready;PC.onready=null;f&&f()}
 if(m.type==='error'){PC.loading=false;pcStat('Speech model failed to load: '+m.msg)}
-if(m.type==='text'){PC.done++;const t=(m.text||'').replace(/\s+/g,' ').trim();if(t&&!PC_JUNK.test(t)){$('notes').value+=`[${fmt(m.t)}] ${m.spk}: ${t}\n`;$('notes').scrollTop=1e9;if(PC.on&&Date.now()-PC.last>1500){PC.last=Date.now();run()}}
+if(m.type==='text'){PC.done++;const t=(m.text||'').replace(/\s+/g,' ').trim();if(t&&!PC_JUNK.test(t)){$('notes').value+=`[${fmt(m.t)}] ${m.spk}: ${t}\n`;$('notes').scrollTop=1e9;clearTimeout(PC.rt);if(PC.on&&Date.now()-PC.last>1500){PC.last=Date.now();run()}else PC.rt=setTimeout(run,500)}
 $('pcq').textContent=PC.q>PC.done?`Transcribing ${PC.q-PC.done} clip(s)…`:'';if(PC.waitDone&&PC.done>=PC.q){const f=PC.waitDone;PC.waitDone=null;f()}}};
 PC.w.postMessage({type:'load'})}
 function pcPrep(){pcLoad(()=>pcStat('Speech model downloaded and saved on this computer. You are ready for calls.'))}
@@ -298,7 +301,7 @@ call.timer=setInterval(()=>$('ctimer').textContent=fmt(Date.now()-call.t0),1000)
 try{call.lock=await navigator.wakeLock?.request('screen')}catch(e){}
 $('notes').value+=($('notes').value?"\n":"")+`[Call started ${new Date().toLocaleString()}]\n`;listen()}
 function listen(){if(!call.on)return;const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const r=new SR();call.rec=r;r.continuous=true;r.interimResults=true;r.lang='en-US';
-r.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){const x=e.results[i];if(x.isFinal){const txt=x[0].transcript.trim();if(!txt)continue;const ln=`[${fmt(Date.now()-call.t0)}] ${call.spk}: ${txt}`;call.lines.push({spk:call.spk,txt});$('notes').value+=ln+"\n";$('notes').scrollTop=1e9;if(Date.now()-call.last>1500){call.last=Date.now();run()}}else interim+=x[0].transcript}
+r.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){const x=e.results[i];if(x.isFinal){const txt=x[0].transcript.trim();if(!txt)continue;const ln=`[${fmt(Date.now()-call.t0)}] ${call.spk}: ${txt}`;call.lines.push({spk:call.spk,txt});$('notes').value+=ln+"\n";$('notes').scrollTop=1e9;clearTimeout(call.rt);if(Date.now()-call.last>1500){call.last=Date.now();run()}else call.rt=setTimeout(run,500)}else interim+=x[0].transcript}
 $('interim').textContent=interim?`${call.spk}: ${interim}…`:''};
 r.onerror=e=>{if(e.error==='not-allowed'){alert('Microphone access was blocked. Allow the microphone for this site in your browser settings.');endCall()}};
 r.onend=()=>{if(call.on)setTimeout(listen,250)};/* auto-restart: phones stop listening after pauses */
@@ -369,6 +372,8 @@ P.income=num(lab(s,/(?:annual income|household income|income|salary|make|makes|m
 P.budget=num(lab(s,/(?:budget|monthly premium|premium|afford|spend|pay|per month)[^\d$\n]{0,20}(\$?\s?[\d,\.]+)/));
 P.mortgage=num(lab(s,/(?:mortgage|home loan|house)[^\d$\n]{0,20}(\$?\s?[\d,\.]+\s?(?:k|thousand)?)/));
 P.face=num(lab(s,/(?:face amount|face|coverage amount|coverage|death benefit|benefit amount|amount requested|amount of insurance|policy amount|insurance amount|wants)[^\d$\n]{0,15}(\$?\s?[\d,\.]+\s?(?:k|thousand|million)?)/));
+if(!P.face){const f=s.match(/(?:want|need|looking for|get|leave(?: behind)?|thinking)\s+(?:about|around|maybe|like|roughly|at least|somewhere around)?\s*\$?\s?(\d[\d,]*(?:\.\d+)?\s?(?:k|thousand)?)\s*(?:dollars?)?\s*(?:for|in|of|worth|to cover|coverage|policy|life insurance|burial|funeral)/);if(f)P.face=money(f[1])}
+if(!P.budget){const b=s.match(/\$?\s?(\d{2,3}(?:\.\d{2})?)\s*(?:dollars?|bucks)?\s*(?:a|per|each|every)\s*month/);if(b)P.budget=money(b[1])}
 if(P.face&&P.face<1000)P.face=null;if(P.budget&&P.budget>2000)P.budget=null;
 /* tobacco */
 if(/non.?(smoker|tobacco|nicotine)|never smoked|(doesn.?t|does not|don.?t|do not|never)\s+(smoke|smoking|use tobacco|use nicotine|vape|chew)|not a smoker|no tobacco|no nicotine|denies (tobacco|smoking)|(tobacco|nicotine|smoker|smoke|smoking)( use| user| status)?\s*[:\-?]?\s*(no|n|never|none)\b/.test(s))P.smoker="no";
@@ -446,14 +451,18 @@ inp('face','Face amount $',P.face,100)+inp('budget','Budget $/mo',P.budget,80)+i
 /* ---- two-sided call interpretation ---- */
 const YES=/^(yes|yeah|yep|yup|ya|uh huh|mm hmm|correct|right|that'?s right|sure|i do|i am|i have|i did|absolutely|definitely|exactly|ok(ay)?)\b/i;
 const NO=/^(no|nope|nah|never|not really|i don'?t|i do not|i'?m not|i am not|i haven'?t|i have not|none)\b/i;
-function topicOf(q){q=q.toLowerCase();if(/how old|your age|date of birth|birthday|\bborn\b/.test(q))return'age';if(/budget|afford|per month|a month|monthly|premium/.test(q))return'budget';if(/coverage|how much (life )?insurance|face amount|death benefit|how much would you like|leave behind/.test(q))return'coverage';if(/how tall|height/.test(q))return'height';if(/weigh/.test(q))return'weight';if(/income|make a year|earn|salary/.test(q))return'income';if(/mortgage|owe on (the|your) house/.test(q))return'mortgage';return null}
+function topicOf(q){q=q.toLowerCase();if(/date of birth|birthday|birth ?date|\bdob\b|when were you born/.test(q))return'dob';if(/beneficiar|leave (it|the money) to|who (would|should|will) (get|receive)/.test(q))return'beneficiary';if(/draft|what day.*(paid|check|deposit)|pay ?day|social security (come|hit|deposit)/.test(q))return'draft';if(/how old|your age|\bborn\b/.test(q))return'age';if(/budget|afford|per month|a month|monthly|premium/.test(q))return'budget';if(/coverage|how much (life )?insurance|face amount|death benefit|how much would you like|leave behind/.test(q))return'coverage';if(/how tall|height/.test(q))return'height';if(/weigh/.test(q))return'weight';if(/income|make a year|earn|salary/.test(q))return'income';if(/mortgage|owe on (the|your) house/.test(q))return'mortgage';return null}
 function stripQ(q){return q.replace(/\?/g,'').replace(/^(so|and|okay|ok|now|alright|great)[, ]+/i,'').replace(/^(are you|do you (currently )?(have|use|take)|have you (ever )?(had|been diagnosed with|used)|do you|have you|is there|any|ever had)\s+/i,'').trim()}
 function interpretCall(raw){const lines=raw.split('\n');let out=[],lastMe=null,log=[];
 for(const l of lines){const m=l.match(/^\[\d+:\d+\] (Me|Client): (.*)$/);if(!m){if(!/^\[Call/.test(l))out.push(l);continue}
 const [_,who,txt]=m;if(who==='Me'){lastMe=txt;continue}
 let a=txt.trim(),res=a;
 if(lastMe){const tp=topicOf(lastMe),short=a.split(/\s+/).length<=8,hasNum=/\d/.test(a);
-if(tp&&hasNum&&short){res=tp==='age'?`age ${a.match(/\d+/)[0]}`:tp==='height'?`height ${a}`:tp==='weight'?`weight ${a.match(/\d+/)[0]} lbs`:`${tp} ${a}`;if(tp==='budget')res=`budget ${a}`}
+if(tp==='dob'&&/\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}|(january|february|march|april|may|june|july|august|september|october|november|december)/i.test(a)){res=`date of birth ${a}`}
+else if(tp==='beneficiary'&&!/^\s*(no|none|not sure|i don.?t know)\b/i.test(a)){res=`beneficiary is ${a}`}
+else if(tp==='draft'){res=`draft date ${a}`}
+else if(tp==='dob'&&hasNum&&short&&!/\d{3,}/.test(a)&&+(a.match(/\d+/)[0])>17){res=`age ${a.match(/\d+/)[0]}`}
+else if(tp&&tp!=='dob'&&tp!=='beneficiary'&&tp!=='draft'&&hasNum&&short){res=tp==='age'?`age ${a.match(/\d+/)[0]}`:tp==='height'?`height ${a}`:tp==='weight'?`weight ${a.match(/\d+/)[0]} lbs`:`${tp} ${a}`;if(tp==='budget')res=`budget ${a}`}
 else if(YES.test(a)&&short){res=stripQ(lastMe)+'. '+a.replace(YES,'').trim()}
 else if(NO.test(a)&&short){res=stripQ(lastMe)+': no. '+a.replace(NO,'').trim()}
 if(res!==a)log.push(`You: "${lastMe}" → Client: "${a}" ⇒ ${res}`)}
@@ -463,7 +472,7 @@ function run(){const t=interpretCall($('notes').value).trim();const il=$('interp
 let P=extract(t);for(const k in OV){if(OV[k]!==''&&OV[k]!=null)P[k]=OV[k]}if(P.ht&&P.wt)P.hw=`${P.ht[0]}'${P.ht[1]}", ${P.wt} lb`;
 drawProfile(P);
 const r=products.map(p=>score(p,P)).filter(Boolean).sort((a,b)=>b.sc-a.sc);
-$('results').innerHTML=r.length?r.slice(0,5).map((x,i)=>`<div class="prod ${i?"":"top"}"><span class="score">${x.sc}%</span><b>${i===0?"★ ":""}${x.p.carrier} — ${x.p.name}</b><div class="mut">${TYPES[x.p.type]} · ${x.p.uw} underwriting · max $${(+x.p.maxFace).toLocaleString()}</div><ul>${x.why.map(w=>`<li>${w}</li>`).join("")}${x.warn.map(w=>`<li class="warn">⚠ ${w}</li>`).join("")}</ul>${x.p.riders?`<div class="mut">Riders: ${x.p.riders}</div>`:""}${GUIDES[x.p.carrier]?`<div style="margin-top:6px"><a class="chip" style="color:var(--acc)" href="${GUIDES[x.p.carrier].links[0][1]}" target="_blank" rel="noopener">${GUIDES[x.p.carrier].links[0][0]} ↗</a> <span class="mut">${GUIDES[x.p.carrier].rules[0]}</span></div>`:""}</div>`).join(""):"<p class='warn'>None of your products fit this client's age. You may need another carrier appointment.</p>";
+$('results').innerHTML=r.length?r.slice(0,5).map((x,i)=>`<div class="prod ${i?"":"top"}"><span class="score">${x.sc}%</span><b>${i===0?"★ ":""}${x.p.carrier} — ${x.p.name}</b><div class="mut">${TYPES[x.p.type]} · ${x.p.uw} underwriting · max $${(+x.p.maxFace).toLocaleString()}</div><ul>${x.why.map(w=>`<li>${w}</li>`).join("")}${x.warn.map(w=>`<li class="warn">⚠ ${w}</li>`).join("")}</ul>${x.p.riders?`<div class="mut">Riders: ${x.p.riders}</div>`:""}${portalFor(x.p.carrier)?`<div style="margin-top:6px"><a class="pbtn hot" href="${portalFor(x.p.carrier)[0]}" target="_blank" rel="noopener" onclick="copyApp('${x.p.carrier.replace(/'/g,"")} - ${x.p.name.replace(/'/g,"")}')">Open ${x.p.carrier} ${portalFor(x.p.carrier)[1]} ↗</a> <button class="sec" style="padding:4px 10px" onclick="copyApp('${x.p.carrier.replace(/'/g,"")} - ${x.p.name.replace(/'/g,"")}')">Copy client info</button></div>`:""}${GUIDES[x.p.carrier]?`<div style="margin-top:6px"><a class="chip" style="color:var(--acc)" href="${GUIDES[x.p.carrier].links[0][1]}" target="_blank" rel="noopener">${GUIDES[x.p.carrier].links[0][0]} ↗</a> <span class="mut">${GUIDES[x.p.carrier].rules[0]}</span></div>`:""}</div>`).join(""):"<p class='warn'>None of your products fit this client's age. You may need another carrier appointment.</p>";
 window._P=P;window._R=r;window._Q=questions(P,r[0]);drawQuotes(r,P);$('qs').innerHTML=questions(P,r[0]).map(q=>`<li>${q}</li>`).join("");if(!window._noFile)cfQueue()}
 
 /* ---- Client Files: every input + assessment filed under the client (Supabase, passcode protected) ---- */
@@ -522,11 +531,61 @@ function cfText(c){const L=[`CLIENT FILE: ${c.name}`,[c.age&&('Age '+c.age),c.se
 function cfDownload(){const c=CF_OPEN;const html=`<!do'+'ctype html><meta charset="utf-8"><title>${esc(c.name)} client file<\/title><bo'+'dy style="font:14px/1.5 system-ui;max-width:800px;margin:24px auto;padding:0 16px"><pre style="white-space:pre-wrap;font:inherit">${esc(cfText(c))}<\/pre><\/body>`;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));a.download=c.name.replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'_')+'_client_file.html';document.body.appendChild(a);a.click();a.remove()}
 function cfEmail(){const c=CF_OPEN;let b=cfText(c);if(b.length>1800)b=b.slice(0,1800)+'\n…(trimmed; open Client Files in Assesser for the full file)';location.href=`mailto:${AGENT.email||''}?subject=${encodeURIComponent('Client file: '+c.name)}&body=${encodeURIComponent(b)}`}
 
+/* ---- application prefill + carrier e-app buttons ---- */
+const PORTALS={
+"Americo":["https://tools.americoagent.com","FE e-app (Agent Tools)"],
+"Transamerica":["https://www.transamerica.com/login/financial-professional","Sales & Service Hub"],
+"Ethos":["https://agents.ethoslife.com/login","Agent portal"],
+"Gerber Life":["https://www.gerberlife.com/gl/ap/view/agency/login.jsp","Agent portal"],
+"Baltimore Life":["https://agentportal.baltlife.com/","Agent portal"],
+"Corebridge":["https://www.connext.corebridgefinancial.com/life/connext-portal/public/login","Connext e-app"],
+"Foresters":["https://ezbiz.foresters.com/","Producer site"],
+"Mutual of Omaha":["https://www.mutualofomaha.com/broker","Sales Professional Access"],
+"American Amicable":["https://www.americanamicable.com/v4/AgentLogin.php","Agent login"],
+"Royal Neighbors of America":["https://agent.royalneighbors.org/Login.aspx","Agent portal"],
+"CICA Life":["https://cicaamerica.citizensinc.com","Agent portal"]};
+function portalFor(c){if(PORTALS[c])return PORTALS[c];const k=Object.keys(PORTALS).find(k=>c&&(c.toLowerCase().includes(k.toLowerCase().split(' ')[0])||k.toLowerCase().includes(c.toLowerCase())));return k?PORTALS[k]:null}
+const MEDS=['lisinopril','losartan','amlodipine','metoprolol','atenolol','carvedilol','hydrochlorothiazide','hctz','furosemide','lasix','spironolactone','valsartan','olmesartan','benazepril','enalapril','clonidine','hydralazine','metformin','glipizide','glimepiride','glyburide','januvia','jardiance','farxiga','trulicity','ozempic','mounjaro','victoza','insulin','lantus','humalog','novolog','levemir','tresiba','atorvastatin','lipitor','simvastatin','rosuvastatin','crestor','pravastatin','eliquis','xarelto','warfarin','coumadin','plavix','clopidogrel','aspirin','nitroglycerin','digoxin','entresto','levothyroxine','synthroid','omeprazole','pantoprazole','famotidine','gabapentin','lyrica','tramadol','hydrocodone','oxycodone','meloxicam','prednisone','albuterol','advair','symbicort','spiriva','breo','trelegy','montelukast','singulair','sertraline','zoloft','fluoxetine','prozac','escitalopram','lexapro','citalopram','bupropion','wellbutrin','trazodone','duloxetine','cymbalta','venlafaxine','buspirone','alprazolam','xanax','lorazepam','clonazepam','quetiapine','seroquel','aripiprazole','abilify','lithium','donepezil','aricept','memantine','tamsulosin','flomax','finasteride','allopurinol','alendronate','methotrexate','humira','enbrel','oxygen','cpap','dialysis'];
+function appExtract(raw,P){const t=raw||'',s=t.toLowerCase(),A={};
+ A.name=($('cfname')&&$('cfname').value.trim())||(typeof guessName==='function'?guessName(t):'');
+ let d=s.match(/(?:dob|date of birth|birth ?date|born(?: on)?)[^\d\n]{0,14}(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/)||s.match(/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](19\d{2}|20[0-2]\d)\b/);
+ if(d){let y=+d[3];if(y<100)y+=y>30?1900:2000;A.dob=`${String(+d[1]).padStart(2,'0')}/${String(+d[2]).padStart(2,'0')}/${y}`}
+ else{const MO='january|february|march|april|may|june|july|august|september|october|november|december';const m=s.match(new RegExp('(?:born|birthday|dob|date of birth)[^\\n]{0,20}?\\b('+MO+')\\s+(\\d{1,2})(?:st|nd|rd|th)?,?\\s+(19\\d{2}|20[0-2]\\d)'));if(m){const mi=MO.split('|').indexOf(m[1])+1;A.dob=`${String(mi).padStart(2,'0')}/${String(+m[2]).padStart(2,'0')}/${m[3]}`}}
+ let m=t.match(/(?:\+?1[\s.-]?)?\(?\b(\d{3})\)?[\s.-]?(\d{3})[\s.-]?(\d{4})\b/);if(m)A.phone=`(${m[1]}) ${m[2]}-${m[3]}`;
+ m=t.match(/[\w.+-]+@[\w-]+\.[\w.]{2,}/);if(m)A.email=m[0];
+ m=t.match(/\b\d{1,6}\s+(?:[NSEW]\.?\s+)?[A-Za-z0-9.' ]{2,30}?\s(?:street|st|road|rd|avenue|ave|drive|dr|lane|ln|boulevard|blvd|court|ct|circle|cir|way|place|pl|highway|hwy|parkway|pkwy|trail|trl|pike)\b\.?(?:,?\s*(?:apt|unit|#)\s*\w+)?/i);if(m)A.addr=m[0].trim();
+ m=s.match(/\b(?:zip(?: code)?\s*(?:is|:)?\s*)(\d{5})\b/)||s.match(/\b[a-z]{2}\s+(\d{5})(?:-\d{4})?\b/)||s.match(/\b(\d{5})(?:-\d{4})\b/);if(m)A.zip=m[1];
+ const meds=new Set();MEDS.forEach(x=>{if(new RegExp('\\b'+x+'\\b').test(s)&&!negated(s,x))meds.add(x)});
+ const ml=s.match(/(?:medications?|meds|prescriptions?|takes?|taking|on)\s*(?:are|is|:)\s*([a-z0-9 ,\-\/]+?)(?:\.|\n|$)/);if(ml)ml[1].split(/,| and /).map(x=>x.trim()).filter(x=>x&&x.length<30&&!/^(no|none|nothing)$/.test(x)).forEach(x=>meds.add(x));
+ A.meds=[...meds];if(/\b(no|not on any|don.?t take any|doesn.?t take any)\s+(meds|medications|prescriptions)\b/.test(s)&&!A.meds.length)A.meds=['none'];
+ m=t.match(/\b(?:Dr\.?|Doctor)\s+([A-Z][a-z'\-]+(?:\s+[A-Z][a-z'\-]+)?)/);if(m)A.doctor='Dr. '+m[1];
+ const REL='wife|husband|spouse|son|daughter|grandson|granddaughter|grandchild|sister|brother|mother|mom|father|dad|niece|nephew|partner|fiance|fiancee|friend|cousin|estate|children|kids';
+ m=t.match(new RegExp('(?:beneficiary|benefici?ary)\\s*(?:is|would be|will be|:|-|should be)?\\s*(?:going to be\\s*)?(?:my\\s+|her\\s+|his\\s+)?('+REL+')?[ ,]*(?:named\\s+|,\\s*)?([A-Z][a-z\'\\-]+(?:\\s+[A-Z][a-z\'\\-]+)?)?','i'))||t.match(new RegExp('(?:leave it to|go to|goes to|left to|for)\\s+(?:my\\s+)?('+REL+')\\b[ ,]*([A-Z][a-z\'\\-]+(?:\\s+[A-Z][a-z\'\\-]+)?)?','i'));
+ if(m&&(m[1]||m[2])){const nm=m[2]&&!/^(Is|Will|The|And|My|Her|His|Would)$/.test(m[2])?m[2]:'';A.benef=[nm,m[1]?'('+m[1].toLowerCase()+')':''].filter(Boolean).join(' ')}
+ m=s.match(/(second|third|fourth|2nd|3rd|4th)\s+wednesday/);if(m)A.draft=m[1].replace('2nd','second').replace('3rd','third').replace('4th','fourth')+' Wednesday (Social Security)';
+ else{m=s.match(/(?:draft|payment|pay(?:ment)? date|paid|payday|get paid|check comes|deposit)[^\n\d]{0,25}?(\d{1,2})(?:st|nd|rd|th)\b/)||s.match(/\bon the (\d{1,2})(?:st|nd|rd|th)\b/);if(m)A.draft='the '+m[1]+(['','st','nd','rd'][+m[1]%10>3||[11,12,13].includes(+m[1])?0:+m[1]%10]||'th')+' of the month'}
+ if(/direct express/.test(s))A.bank='Direct Express card';else if(/\bchecking\b/.test(s))A.bank='checking';else if(/\bsavings\b/.test(s))A.bank='savings';
+ P=P||{};A.age=P.age;A.sex=P.sex==='M'?'Male':P.sex==='F'?'Female':'';A.tob=P.smoker==null?'':{no:'No',former:'Former',current:'Yes'}[P.smoker];A.hw=P.ht?`${P.ht[0]}'${P.ht[1]}"${P.wt?' / '+P.wt+' lb':''}`:(P.wt?P.wt+' lb':'');A.state=P.state||'';A.health=(P.health||[]).join(', ')||(P.healthy?'none reported':'');A.face=P.face?'$'+(+P.face).toLocaleString():'';A.budget=P.budget?'$'+P.budget+'/mo':'';
+ return A}
+const APPF=[['name','Name'],['dob','DOB'],['age','Age'],['sex','Sex'],['tob','Tobacco'],['hw','Height / weight'],['state','State'],['zip','ZIP'],['addr','Address'],['phone','Phone'],['email','Email'],['health','Health'],['meds','Medications'],['doctor','Doctor'],['face','Face amount'],['budget','Budget'],['benef','Beneficiary'],['bank','Bank'],['draft','Draft day']];
+const APPF_NEED=['name','dob','sex','tob','hw','state','health','meds','face','benef','bank','draft'];
+function drawAppf(){const el=$('appf');if(!el)return;const t=$('notes').value;if(!t.trim()){el.innerHTML='';return}const A=appExtract(typeof interpretCall==='function'?interpretCall(t):t,window._P);window._A=A;
+ if(A.name&&$('cfname')&&!$('cfname').value){$('cfname').value=A.name;CUR.autoName=true}if(A.phone&&$('cfphone')&&!$('cfphone').value)$('cfphone').value=A.phone;if(A.email&&$('cfemail')&&!$('cfemail').value)$('cfemail').value=A.email;
+ const v=k=>{const x=A[k];return Array.isArray(x)?x.join(', '):(x==null?'':String(x))};const miss=APPF_NEED.filter(k=>!v(k));
+ el.innerHTML=`<div class="appf"><div class="appfh"><b>Application info</b> <span class="mut">${APPF.length-APPF.filter(([k])=>!v(k)).length} of ${APPF.length} filled · tap a value to copy it</span> <button class="sec" style="padding:4px 10px;margin-left:auto" onclick="copyApp()">Copy all</button></div><div class="appfg">${APPF.map(([k,l])=>{const x=v(k);return x?`<button class="af ok" onclick="cpy(this,${JSON.stringify(x).replace(/"/g,'&quot;')})"><span>${l}</span>${esc(x)}</button>`:`<div class="af ${APPF_NEED.includes(k)?'no':'opt'}"><span>${l}</span>${APPF_NEED.includes(k)?'ask':'—'}</div>`}).join('')}</div>${miss.length?`<div class="mut" style="margin-top:6px;font-size:12.5px">Still needed for the app: ${miss.map(k=>APPF.find(a=>a[0]===k)[1]).join(', ')}</div>`:''}</div>`}
+function cpy(b,x){const done=()=>{if(b){const o=b.style.outline;b.style.outline='2px solid var(--acc)';setTimeout(()=>b.style.outline=o,700)}};if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(x).then(done,()=>prompt('Copy:',x));else prompt('Copy:',x)}
+function copyApp(carrier){const A=window._A||{};const v=k=>{const x=A[k];return Array.isArray(x)?x.join(', '):(x==null?'':String(x))};cpy(null,(carrier?carrier+' application\n':'')+APPF.filter(([k])=>v(k)).map(([k,l])=>l+': '+v(k)).join('\n'))}
+function drawPortals(){const el=$('portals');if(!el)return;const top=[...new Set((window._R||[]).slice(0,5).map(x=>x.p.carrier))];const all=[...top,...Object.keys(PORTALS).filter(c=>!top.some(t=>portalFor(t)===PORTALS[c]))];
+ el.innerHTML=`<div class="mut" style="font-size:12.5px;margin-bottom:4px">Carrier e-apps and portals (best matches first). Opens in a new tab and copies the client's info.</div>`+all.map((c,i)=>{const p=portalFor(c);return p?`<a class="pbtn ${i<top.length?'hot':''}" href="${p[0]}" target="_blank" rel="noopener" onclick="copyApp(${JSON.stringify(c).replace(/"/g,'&quot;')})">${esc(c)} ↗</a>`:''}).join('')}
+function pruneQs(){const A=window._A||{};const done=[[A.benef,/beneficiar/i],[A.dob,/date of birth|birthday/i],[A.bank||A.draft,/bank account|draft date|payday/i],[A.meds&&A.meds.length,/medications? (are|do)|what medications|list (of )?(all )?medications/i],[A.doctor,/doctor'?s name|primary (care )?doctor/i]];
+ document.querySelectorAll('#qs li').forEach(li=>{const t=li.textContent;if(done.some(([v,re])=>v&&re.test(t)))li.remove()})}
+{const _r2=run;run=function(){const v=_r2.apply(this,arguments);try{drawAppf();drawPortals();pruneQs();if(typeof cvNext==='function')cvNext()}catch(e){}return v}}
+
 /* ---- call view ---- */
 const CV={on:false,ph:[],z:1};
 function cvMove(id,dest){const el=$(id);if(!el)return;const ph=document.createComment('cv');el.parentNode.insertBefore(ph,el);CV.ph.push([ph,el]);dest.appendChild(el)}
 function callView(on){if(on===undefined)on=!CV.on;if(on===CV.on)return;CV.on=on;document.body.classList.toggle('cvon',on);
- if(on){show('match');CV.ph=[];['cfrow','cfst','notes','cvbtns','callbox','pcbox','micst'].forEach(i=>cvMove(i,$('cvL')));['qs','interp'].forEach(i=>cvMove(i,$('cvM')));['results','quotes','profile'].forEach(i=>cvMove(i,$('cvR')));$('cv').classList.remove('hide');cvTab(CV.tab||'L');cvNext()}
+ if(on){show('match');CV.ph=[];['cfrow','cfst','notes','cvbtns','callbox','pcbox','micst'].forEach(i=>cvMove(i,$('cvL')));['appf','qs','interp'].forEach(i=>cvMove(i,$('cvM')));['portals','results','quotes','profile'].forEach(i=>cvMove(i,$('cvR')));$('cv').classList.remove('hide');cvTab(CV.tab||'L');cvNext()}
  else{CV.ph.slice().reverse().forEach(([ph,el])=>{ph.parentNode.insertBefore(el,ph);ph.remove()});CV.ph=[];$('cv').classList.add('hide')}}
 function cvTab(p){CV.tab=p;['L','M','R'].forEach(k=>$('cv'+k).classList.toggle('on',k===p));document.querySelectorAll('#cvtabs button').forEach(b=>b.classList.toggle('on',b.dataset.p===p))}
 function cvZoom(d){CV.z=Math.min(1.6,Math.max(0.8,Math.round((CV.z+d*0.1)*10)/10));$('cvgrid').style.setProperty('--cvz',CV.z)}
